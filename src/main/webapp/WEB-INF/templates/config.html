@@ -1,0 +1,129 @@
+<div class="row">
+	<div class="col-md-8">
+		<div class="row">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">Application Configuration</h3>
+				</div>
+				<div class="panel-body">
+					
+					<div class="form-group">
+						<h4><span class="label label-success" th:if="${#bools.isTrue(isS3Config)}" th:text="${configLoadedFrom}">S3 Config</span><span class="label label-warning" th:if="${#bools.isFalse(isS3Config)}" th:text="${configLoadedFrom}">File Config</span></h4>
+						<table class="table">
+							<!--  S3 Config -->
+							<tbody th:if="${#bools.isTrue(isS3Config)}">
+								<tr>
+									<td>Bucket</td>
+									<td th:text="${configBucket}">The bucket</td>
+								</tr>
+								<tr>
+									<td>Key</td>
+									<td th:text="${configKey}">The key</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					
+					<div class="form-group">
+						<h4><span class="label label-success" th:if="${#bools.isTrue(isToken)}">Credentials (Session)</span><span class="label label-warning" th:if="${#bools.isFalse(isToken)}">Credentials (IAM)</span></h4>
+						<table class="table">
+							<tbody>
+								<tr>
+									<td>Access Key</td>
+									<td th:text="${accessKey}"></td>
+								</tr>
+								<tr>
+									<td>Secret Key</td>
+									<td>***************************"</td>
+								</tr>
+								<tr th:if="${#bools.isTrue(isToken)}">
+									<td>Session Token</td>
+									<td>***************************"</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Configuration Settings</h3>
+			</div>
+			<div class="panel-body">
+				<div th:unless="${#lists.isEmpty(ecp.configProps)}">
+					<form method="post" th:action="@{/config/edit/}" th:object="${ecp}">
+					<div th:each="cp,cpStat : *{configProps}">
+						<div class="configurable-item">
+							<div class="row">
+								<div class="col-md-8">
+									<p>
+										<strong th:text="${cp.displayName}"></strong>
+									</p>
+								</div>
+								<div class="col-md-4">
+									<div>
+									<input th:field="*{configProps[__${cpStat.index}__].propertyName}" type="hidden"/>
+									<input th:field="*{configProps[__${cpStat.index}__].propertyValue}" type="text" class="pull-right" />
+									<!-- 
+										<div class="btn-group pull-right" data-toggle="buttons">
+										  <label class="btn btn-info btn-small" th:classappend="${tp.value.getBooleanPropertyValue()}? 'active'" onclick="this.form.submit()">
+										    <input type="radio" name="options" value="true">On</input>
+										  </label>
+										  <label class="btn btn-info btn-small" th:classappend="${!tp.value.getBooleanPropertyValue()}? 'active'" onclick="this.form.submit()">
+										    <input type="radio" name="options" value="false">Off</input>
+										  </label>
+										</div>
+									</form> -->
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<hr/>
+					<button type="submit" class="btn btn-info pull-right">Save</button>
+					</form>
+				</div>
+				<div th:if="${#lists.isEmpty(ecp.configProps)}">
+					<p>There are no configurable properties that can be edited.</p>
+				</div>
+			</div>
+		</div>
+		</div>
+	</div>
+	<div class="col-md-4">
+		<div th:class="${#bools.isTrue(allProvisioned)}? 'panel panel-default' : 'panel panel-info'">
+			<div class="panel-heading">
+				<h3 class="panel-title">Provisionable Items</h3>
+			</div>
+			<div class="panel-body">
+				<div th:unless="${#maps.isEmpty(prs)}" th:each="pr : ${prs}">
+					<div class="configurable-item">
+						<div class="row">
+							<div class="col-md-8">
+								<p>
+									<strong th:text="${pr.value.getName()}"></strong>
+								</p>
+							</div>
+							<div class="col-md-4">
+								<div th:switch="${pr.value.getState().name()}">
+									<a th:case="'UNPROVISIONED'" type="submit" th:href="@{/config/provision/} + ${pr.key}"
+										class="btn pull-right btn-info">Create</a>
+									<a th:case="'PROVISIONING'" type="submit"
+										class="btn pull-right btn-info disabled">Creating</a>
+									<a th:case="'PROVISIONED'" type="submit"
+										class="btn pull-right btn-success disabled">OK</a>
+								</div>
+							</div>
+						</div>
+					</div>
+					<hr />
+				</div>
+				<div th:if="${#lists.isEmpty(prs)}">
+					<p>There are no configurable items to display</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

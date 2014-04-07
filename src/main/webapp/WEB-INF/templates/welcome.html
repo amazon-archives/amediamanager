@@ -1,0 +1,60 @@
+<div class="row">
+	<div class="col-md-8">
+		<div class="jumbotron" style="background-color:#fff;">
+			<h1>Welcome to</h1>
+			<img th:src="@{/static/img/a_media_manager_large.jpg}" width="600px"></img>
+		</div>
+	</div>
+	<div class="col-md-4">
+		<div class="well">
+			<form method="post" th:action="@{/register}" th:object="${newUser}">
+				<fieldset>
+					<div id="legend">
+						<legend> Sign Up </legend>
+					</div>
+					<div th:class="${#fields.hasErrors('email')}? 'form-group has-error' : 'form-group'">
+						<!-- E-mail -->
+						<label class="control-label" for="email"> E-mail </label>
+						<p th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="control-label">Invalid e-mail address</p>
+						<div class="controls">
+							<input type="text" th:field="*{email}" placeholder=""
+								class="form-control"></input>
+						</div>
+					</div>
+					<div class="form-group">
+						<!-- Nickname -->
+						<label class="control-label" for="nickname"> Nickname </label>
+						<div class="controls">
+							<input type="text" th:field="*{nickname}" placeholder=""
+								class="form-control"></input>
+						</div>
+					</div>
+					<div class="form-group">
+						<!-- Motto -->
+						<label class="control-label" for="motto"> Motto </label>
+						<div class="controls">
+							<input type="text" th:field="*{tagline}" placeholder=""
+								class="form-control"></input>
+						</div>
+					</div>
+					<div th:class="${#fields.hasErrors('password')}? 'form-group has-error' : 'form-group'">
+						<!-- Password-->
+						<label class="control-label" for="password">Password </label>
+						<p th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="control-label">Invalid password</p>
+						<div class="controls">
+							<input type="password" th:field="*{password}"
+								placeholder="" class="form-control"></input>
+							<p></p>
+						</div>						
+					</div>
+					<div class="form-group">
+						<!-- Button -->
+						<div class="controls">
+							<button class="btn btn-primary btn-lg">Register</button>
+						</div>
+					</div>
+				</fieldset>
+			</form>
+		</div>
+	</div>
+</div>

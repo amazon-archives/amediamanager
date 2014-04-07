@@ -1,0 +1,329 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Deploy the aMediaManager application to Elastic Beanstalk. This template is designed to be executed by the parent amm-resources stack.",
+
+  "Parameters": {
+    "RdsDbId": {
+      "Type": "String"
+    },
+    "AppBucket": {
+      "Type": "String"
+    },
+    "CacheEndpoint": {
+      "Type": "String"
+    },
+    "CachePort": {
+      "Type": "String"
+    },
+    "TranscodeTopic": {
+      "Type": "String"
+    },
+    "TranscodeQueue": {
+      "Type": "String"
+    },
+    "TranscodeRoleArn": {
+      "Type": "String"
+    },
+    "UsersTable": {
+      "Type": "String"
+    },
+    "DatabaseUser": {
+      "NoEcho": "true",
+      "Type": "String"
+    },
+    "DatabasePassword": {
+      "NoEcho": "true",
+      "Type": "String"
+    },
+    "AssetsBucketPrefix": {
+      "Type": "String"
+    },
+    "WarKey": {
+      "Type": "String"
+    },
+    "KeyName": {
+      "Type": "String"
+    },
+    "InstanceType": {
+      "Type": "String"
+    },
+    "ApplicationName": {
+      "Type": "String"
+    },
+    "DeveloperName": {
+      "Type": "String",
+      "Default": "Default"
+    },
+    "EnvironmentName": {
+      "Type": "String",
+      "Default": "Dev-VPC"
+    },
+    "InstanceSecurityGroup": {
+      "Type": "String"
+    },
+    "VPCId" : {
+      "Type" : "String",
+      "Description" : "The VPC ID to launch the application into."
+    },
+    "PublicSubnets" : {
+      "Type" : "String",
+      "Description" : "A comma-delimited list of public VPC subnets. ELBs will be launched into this subnet."
+    },
+    "PrivateSubnets" : {
+      "Type" : "String",
+      "Description" : "A comma-delimited list of private VPC subnets. Auto Scaling and RDS will be launched into this subnet."
+    }
+  },
+
+  "Resources": {
+    "Application": {
+      "Type": "AWS::ElasticBeanstalk::Application",
+      "Properties": {
+        "Description": {
+          "Ref": "ApplicationName"
+        },
+        "ApplicationName" : { "Fn::Join" : ["-", [{ "Ref": "ApplicationName" }, {"Ref": "DeveloperName"}]] },
+        "ConfigurationTemplates": [{
+          "TemplateName": "DefaultConfiguration",
+          "Description": "Default Configuration Version 1.0 - with SSH access",
+          "SolutionStackName": "64bit Amazon Linux running Tomcat 7",
+          "OptionSettings": [{
+            "Namespace": "aws:elasticbeanstalk:application:environment",
+            "OptionName": "S3_CONFIG_BUCKET",
+            "Value": {
+              "Ref": "AppBucket"
+            }
+          }, {
+            "Namespace": "aws:elasticbeanstalk:application:environment",
+            "OptionName": "S3_CONFIG_KEY",
+            "Value": {
+              "Fn::Join": ["", ["config/env/", {
+                "Ref": "AWS::StackName"
+              }, ".properties"]]
+            }
+          }, {
+            "Namespace": "aws:elasticbeanstalk:application:environment",
+            "OptionName": "AMM_AWS_REGION",
+            "Value": {
+              "Ref": "AWS::Region"
+            }
+          }, {
+            "Namespace": "aws:autoscaling:launchconfiguration",
+            "OptionName": "EC2KeyName",
+            "Value": {
+               "Ref" : "KeyName"
+            }
+          },{
+            "Namespace": "aws:ec2:vpc",
+            "OptionName": "VPCId",
+            "Value": {
+              "Ref": "VPCId"
+            }
+          }, {
+            "Namespace": "aws:ec2:vpc",
+            "OptionName": "Subnets",
+            "Value": {
+              "Ref" : "PrivateSubnets"
+            }
+          }, {
+            "Namespace": "aws:ec2:vpc",
+            "OptionName": "ELBSubnets",
+            "Value": {
+              "Ref" : "PublicSubnets"
+            }
+          }, {
+            "Namespace": "aws:autoscaling:launchconfiguration",
+            "OptionName": "IamInstanceProfile",
+            "Value": {
+              "Ref": "EbAppInstanceProfile"
+            }
+          }, {
+            "Namespace": "aws:autoscaling:launchconfiguration",
+            "OptionName": "InstanceType",
+            "Value": {
+              "Ref": "InstanceType"
+            }
+          }, {
+            "Namespace": "aws:autoscaling:launchconfiguration",
+            "OptionName": "SecurityGroups",
+            "Value": {
+              "Ref": "InstanceSecurityGroup"
+            }
+          }]
+        }],
+        "ApplicationVersions": [{
+          "VersionLabel": "Initial Version",
+          "Description": "Initial Version",
+          "SourceBundle": {
+            "S3Bucket": {
+              "Fn::Join": ["", [{
+                "Ref": "AssetsBucketPrefix"
+              }, {
+                "Ref": "AWS::Region"
+              }]]
+            },
+            "S3Key": {
+              "Ref": "WarKey"
+            }
+          }
+        }]
+      }
+    },
+    "Environment": {
+      "Type": "AWS::ElasticBeanstalk::Environment",
+      "Properties": {
+        "ApplicationName": { "Ref": "Application"},
+        "EnvironmentName" : { "Fn::Join" : ["-", [ { "Ref": "EnvironmentName" }, {"Ref": "DeveloperName"}]] },
+        "Description": "Default Environment",
+        "VersionLabel": "Initial Version",
+        "TemplateName": "DefaultConfiguration",
+        "OptionSettings": [{
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "AMM_RDS_INSTANCEID",
+          "Value": {
+            "Ref": "RdsDbId"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "AMM_RDS_DATABASE",
+          "Value": {
+            "Ref": "ApplicationName"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "AMM_RDS_USERNAME",
+          "Value": {
+            "Ref": "DatabaseUser"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "AMM_RDS_PASSWORD",
+          "Value": {
+            "Ref": "DatabasePassword"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "AMM_CACHE_ENDPOINT",
+          "Value": {
+            "Ref": "CacheEndpoint"
+          }
+        },{
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "AMM_CACHE_PORT",
+          "Value": {
+            "Ref": "CachePort"
+          }
+        },{
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "AMM_CACHE_ENABLED",
+          "Value": "true"
+        },{
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "AMM_S3_UPLOAD_BUCKET",
+          "Value": {
+            "Ref": "AppBucket"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "AMM_TRANSCODE_TOPIC",
+          "Value": {
+            "Ref": "TranscodeTopic"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "AMM_TRANSCODE_QUEUE",
+          "Value": {
+            "Ref": "TranscodeQueue"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "AMM_TRANSCODE_ROLE",
+          "Value": {
+            "Ref": "TranscodeRoleArn"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "AMM_DDB_USERS_TABLE",
+          "Value": {
+            "Ref": "UsersTable"
+          }
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "AMM_S3_UPLOAD_PREFIX",
+          "Value": "uploads"
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "AMM_S3_PROFILE_PIC_PREFIX",
+          "Value": "profile"
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "AMM_DEFAULT_VIDEO_POSTER_KEY",
+          "Value": "static/img/default_poster.png"
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "AMM_DEFAULT_PROFILE_PIC_KEY",
+          "Value": "static/img/default_profile_pic.png"
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "DO_S3_CONFIG",
+          "Value": "true"
+        }]
+      }
+    },
+    "EbAppRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "ec2.amazonaws.com"
+              ]
+            },
+            "Action": [
+              "sts:AssumeRole"
+            ]
+          }]
+        },
+        "Path": "/"
+      }
+    },
+    "RolePolicies": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "EbApp",
+        "PolicyDocument": {
+          "Statement": [{
+            "Effect": "Allow",
+            "Action": "*",
+            "Resource": "*"
+          }]
+        },
+        "Roles": [{
+          "Ref": "EbAppRole"
+        }]
+      }
+    },
+    "EbAppInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [{
+          "Ref": "EbAppRole"
+        }]
+      }
+    }
+  },
+  "Outputs": {
+    "URL": {
+      "Description": "URL of the AWS Elastic Beanstalk Environment",
+      "Value": {
+        "Fn::Join": ["", ["http://", {
+          "Fn::GetAtt": ["Environment", "EndpointURL"]
+        }]]
+      }
+    }
+  }
+}

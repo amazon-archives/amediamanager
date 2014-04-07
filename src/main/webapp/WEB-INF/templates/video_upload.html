@@ -1,0 +1,114 @@
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('.datepicker').datepicker({});
+	});
+</script>
+<div class="row">
+	<div class="col-md-3"></div>
+	<div class="col-md-6">
+		<div class="well" th:object="${formSigner}">
+			<form role="form" method="post" th:action="*{s3BucketUrl}"
+				enctype="multipart/form-data">
+				<!--  The owner of the video -->
+
+
+				<input type="hidden" name="x-amz-security-token"
+					th:if="*{#bools.isTrue(isToken)}" th:value="*{credsProvider.credentials.sessionToken}" />
+
+				<!-- The key (name) the video file will have once in S3 -->
+				<input type="hidden" name="key" th:value="*{objectKey}" />
+
+				<!-- Access Key -->
+				<input type="hidden" name="AWSAccessKeyId" th:value="*{credsProvider.credentials.AWSAccessKeyId}" />
+
+				<!-- Where S3 will redirect the user after the video upload completes -->
+				<input type="hidden" name="success_action_redirect"
+					th:value="*{successActionRedirect}" />
+
+				<!-- The Base64 encoded policy that the POSTed form must conform to -->
+				<input type="hidden" name="policy" th:value="*{encodedPolicy}" />
+
+				<!-- The policy signed with the Secret Key (prevents tampering)-->
+				<input type="hidden" name="signature" th:value="*{signature}" />
+				
+				<input type="hidden" name="x-amz-meta-bucket" th:value="*{s3Bucket}" />
+				<input type="hidden" name="x-amz-meta-owner" th:value="${user.email}" />
+				<input type="hidden" name="x-amz-meta-uuid" th:value="*{uuid}" />
+				<div id="legend">
+					<legend>Upload Video</legend>
+				</div>
+
+				<div class="form-group">
+					<label for="title">Title</label>
+					<div class="input-group">
+						<input type="text" class="form-control" name="x-amz-meta-title"
+							id="title" placeholder="Video Title"></input> <span
+							class="input-group-addon"><span
+							class="glyphicon glyphicon-pencil"></span></span>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="tags">Tags</label>
+					<div class="input-group">
+						<input type="text" class="form-control" name="x-amz-meta-tags"
+							id="tags" placeholder="family, vacation"></input> <span
+							class="input-group-addon"><span
+							class="glyphicon glyphicon-tags"></span></span>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="date">Date taken</label>
+					<div class="input-group">
+						<input type="text" class="form-control datepicker"
+							name="x-amz-meta-createdDate" id="createdDate" placeholder=""></input>
+						<span class="input-group-addon"><span
+							class="glyphicon glyphicon-calendar"></span></span>
+					</div>
+				</div>
+				<div>
+					<label for="privacy">Privacy</label> <select
+						name="x-amz-meta-privacy" class="form-control">
+						<option th:each="privacyLevel : ${allPrivacy}"
+							th:value="${privacyLevel}" th:text="${privacyLevel}">PRIVATE</option>
+					</select>
+				</div>
+				<br/>
+				<div>
+					<label for="privacy">Content Type</label> <select
+						name="Content-Type" class="form-control">
+						<option th:each="contentType : ${allContentType}"
+							th:value="${contentType}" th:text="${contentType}">PRIVATE</option>
+					</select>
+
+				</div>
+				<br/>
+				<div>
+					<label for="description">Description</label>
+					<div class="input-group">
+						<textarea id="description" class="form-control" rows="3"
+							name="x-amz-meta-description"></textarea>
+						<span class="input-group-addon"><span
+							class="glyphicon glyphicon-list-alt"></span></span>
+					</div>
+				</div>
+				<br/>
+				<div>
+					<label for="password">Video</label>
+					<div class="input-group">
+						<input type="file" name="file" class="form-control"></input> <span
+							class="input-group-addon"><span
+							class="glyphicon glyphicon-facetime-video"></span></span>
+					</div>
+				</div>
+				<hr />
+				<div class="control-group">
+					<!-- Button -->
+					<div class="controls">
+						<button class="btn btn-primary btn-lg">Upload</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+	<div class="col-md-3"></div>
+</div>

@@ -1,0 +1,76 @@
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('.datepicker').datepicker({});
+	});
+</script>
+<div class="row">
+	<div class="col-md-3"></div>
+	<div class="col-md-6">
+		<div class="well">
+			<form role="form" method="post" th:object="${video}"
+				th:action="@{/video/} + ${video.id}"
+				enctype="multipart/form-data">
+				<input type="hidden" th:field="*{id}"/>
+				<input type="hidden" th:field="*{owner}"/>
+				<input type="hidden" th:field="*{bucket}"/>
+				<input type="hidden" th:field="*{originalKey}"/>
+				<input type="hidden" th:field="*{thumbnailKey}"/>
+				<input type="hidden" th:field="*{previewKey}"/>
+				<input type="hidden" th:field="*{uploadedDate}"/>
+				<div id="legend">
+					<legend th:text="${video.title}">Edit Video</legend>
+				</div>
+				<img th:src="${video.expiringThumbnailKey}" alt=""
+					class="img-rounded img-responsive"></img>
+					<hr/>
+				<div class="form-group">
+					<label for="title">Title</label>
+					<div class="input-group">
+						<input type="text" class="form-control" id="title"
+							th:field="*{title}" placeholder="Video Title"></input> <span
+							class="input-group-addon"><span
+							class="glyphicon glyphicon-facetime-video"></span></span>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="tags">Tags</label>
+					<div class="input-group">
+						<input type="text" class="form-control" id="tags"
+							th:field="*{tags}" placeholder=""></input> <span
+							class="input-group-addon"><span
+							class="glyphicon glyphicon-list"></span></span>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="date">Date taken</label>
+					<div class="input-group">
+						<input type="text" class="form-control datepicker"
+							id="createdDate" th:field="*{createdDate}" placeholder=""></input>
+						<span class="input-group-addon"><span
+							class="glyphicon glyphicon-calendar"></span></span>
+					</div>
+				</div>
+				<div>
+					<label for="privacy">Privacy</label> <select class="form-control"
+						th:field="*{privacy}">
+						<option th:each="privacyLevel : ${allPrivacy}"
+							th:value="${privacyLevel}" th:text="${privacyLevel}">PRIVATE</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="description">Description</label>
+					<textarea id="description" th:field="*{description}"
+						class="form-control" rows="3"></textarea>
+				</div>
+				<div class="control-group">
+					<!-- Button -->
+					<div class="controls">
+						<button class="btn btn-primary btn-lg">Update</button>
+					</div>
+				</div>
+
+			</form>
+		</div>
+	</div>
+	<div class="col-md-3"></div>
+</div>

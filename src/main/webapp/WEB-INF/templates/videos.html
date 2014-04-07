@@ -1,0 +1,137 @@
+<style>
+.mejs-container {
+	margin-top: 5px;
+	margin-left: auto;
+	margin-right: auto;
+	background: #fff;
+}
+
+.mejs-container .mejs-controls {
+	visibility: hidden;
+}
+
+img.inprogress {
+	margin-top: 5px;
+	padding-bottom: 5px;
+}
+
+.panel-body {
+	padding: 0;
+}
+
+.panel {
+	margin-bottom: 0;
+}
+
+.section-preview .preview .options {
+	padding: .5em;
+}
+</style>
+<script>
+	// jQuery method
+	$(document).ready(function() {
+		$('video').mediaelementplayer();
+	})
+</script>
+<div class="row">
+	<div class="col-md-9 section-preview">
+		<span th:unless="${#lists.isEmpty(videos)}">
+			<div id="legend">
+				<legend>Your Videos</legend>
+			</div>
+			<div class="col-md-12" th:unless="${#strings.isEmpty(selectedTag)}">
+				<ul class="nav nav-pills">
+					<li><a th:href="@{/videos}"><span class="badge">x</span><span
+							th:text="'&nbsp;&nbsp;' + ${selectedTag}"></span></a></li>
+				</ul>
+				<p/>
+			</div>
+			<div th:each="video,iterStat : ${videos}">
+				<div class="col-md-6">
+					<div class="preview">
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<h3 class="panel-title" th:text="${video.title}">Video
+									title</h3>
+							</div>
+							<div class="panel-body">
+								<span th:unless="${#strings.isEmpty(video.previewKey)}"
+									class="no-svg"> <video style="width: 100%;"
+										class="mejs-ted" th:src="${video.expiringPreviewKey}"
+										type="video/mp4" th:id="'example_video_' + ${iterStat.count}"
+										th:poster="${video.expiringThumbnailKey}" width="320"
+										height="240">
+									</video>
+								</span> <span th:if="${#strings.isEmpty(video.previewKey)}"> <img
+									th:src="${video.expiringThumbnailKey}"
+									class="img-responsive inprogress"></img>
+								</span>
+							</div>
+							<div class="panel-footer options">
+								<div class="btn-group">
+									<a class="btn btn-default btn-xs" href="#"
+										th:href="@{/video/} + ${video.id}"><span
+										class="glyphicon glyphicon-pencil"></span></a>
+								</div>
+								<div class="btn-group">
+									<a class="btn btn-default btn-xs" target="_blank"
+										th:href="${video.expiringUrl}"><span
+										class="glyphicon glyphicon-cloud-download"></span></a> <a
+										class="btn btn-default btn-xs dropdown-toggle"
+										data-toggle="dropdown" href="#"> <span class="caret"></span>
+									</a>
+									<ul class="dropdown-menu">
+										<!-- Expiring URL to original video -->
+										<li><a target="_blank" th:href="${video.expiringUrl}">Original</a></li>
+
+										<!-- If the streaming version is set, show it -->
+										<li th:if="${not #strings.isEmpty(video.previewKey)}"><a
+											target="_blank" th:href="${video.expiringPreviewKey}">Web</a></li>
+										<li th:if="${#strings.isEmpty(video.previewKey)}"
+											class="disabled"><a target="_blank" href="#">Web
+												(not available)</a></li>
+										<!-- Placeholder for other formats -->
+										<li class="disabled"><a target="_blank" href="#">iPhone</a></li>
+									</ul>
+								</div>
+								<div class="btn-group">
+									<a class="btn btn-default btn-xs"
+										th:href="@{/video/} + ${video.id} + '?delete'"><span
+										class="glyphicon glyphicon-trash"></span></a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</span>
+	</div>
+	<div class="col-md-3">
+		<div id="empty">
+			<legend>Upload New Video</legend>
+		</div>
+		<a class="btn btn-success btn-lg btn-block" th:href="@{/video/upload}">
+			<span class="glyphicon glyphicon-cloud-upload"></span>
+		</a> <br />
+		<div id="legend">
+			<legend>Tags</legend>
+			<ul class="nav nav-pills">
+				<li th:each="tag,iterStat : ${tags}"><a
+					th:href="@{/tags/} + ${tag.tagId}"><span th:text="${tag.name}"></span><span
+						class="badge" th:text="${tag.count}">42</span></a></li>
+			</ul>
+		</div>
+	</div>
+</div>
+<!-- <div class="row">
+	<div class="col-md-6">
+		<ul class="pagination">
+			<li><a href="#">Prev</a></li>
+			<li><a href="#">1</a></li>
+			<li><a href="#">2</a></li>
+			<li><a href="#">3</a></li>
+			<li><a href="#">Next</a></li>
+		</ul>
+	</div>
+	<div class="col-md-6"></div>
+</div> -->

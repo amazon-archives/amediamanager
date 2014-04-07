@@ -1,0 +1,26 @@
+files:
+  "/etc/tomcat7/context.xml":
+    mode: "000444"
+    owner: "tomcat"
+    group: "root"
+    content: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <Context>
+        <WatchedResource>WEB-INF/web.xml</WatchedResource>
+        <Manager className="com.amazonaws.services.dynamodb.sessionmanager.DynamoDBSessionManager"
+          Table="`{ "Ref" : "SessionTable"}`" Region="`{ "Ref" : "AWS::Region"}`" />
+      </Context>
+Resources:
+  SessionTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      KeySchema: 
+        HashKeyElement:
+          AttributeName: "sessionId"
+          AttributeType: "S"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 10
+        WriteCapacityUnits: 5
+container_commands:
+  copy-libraries:
+    command: "cp WEB-INF/.ebextensions/lib/*.jar /usr/share/tomcat7/lib/"

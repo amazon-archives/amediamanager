@@ -1,0 +1,14 @@
+[
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": "YOUR_EC2_KEY_PAIR"
+  },
+  {
+    "ParameterKey": "VPCAvailabilityZone1",
+    "ParameterValue": "us-east-1a"
+  },
+  {
+    "ParameterKey": "VPCAvailabilityZone2",
+    "ParameterValue": "us-east-1c"
+  }
+]

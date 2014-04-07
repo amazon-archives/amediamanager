@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"></meta>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>aMediaManager App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
+<meta name="description" content=""></meta>
+<meta name="author" content=""></meta>
+<link th:href="@{/static/css/bootstrap/bootstrap.css}" rel="stylesheet"></link>
+<link th:href="@{/static/css/amm.css}" rel="stylesheet"></link>
+<link th:href="@{/static/css/mediaelement/mediaelementplayer.min.css}" rel="stylesheet"></link>
+<link th:href="@{/static/css/mediaelement/mejs-skins.css}" rel="stylesheet"></link>
+<link th:href="@{/static/css/datepicker/datepicker.css}" rel="stylesheet"></link>
+<link th:href="@{/static/css/bootstrap/bootstrap-switch.min.css}" rel="stylesheet"></link>
+
+<script th:src="@{/static/js/jquery/jquery.min.js}"></script>
+<script th:src="@{/static/js/bootstrap/bootstrap.min.js}"></script>
+<script th:src="@{/static/js/bootstrap/transition.js}"></script>
+<script th:src="@{/static/js/bootstrap/collapse.js}"></script>
+<script th:src="@{/static/js/mediaelement/mediaelement-and-player.min.js}"></script>
+<script th:src="@{/static/js/bootstrap/bootstrap-datepicker.js}"></script>
+<script th:src="@{/static/js/bootstrap/bootstrap-switch.min.js}"></script>
+
+<style type="text/css">
+body {
+	padding-top: 95px;
+}
+</style>
+</head>
+
+<body>
+	<!-- <div class="navbar navbar-default navbar-fixed-top">
+		<div class="container">
+			
+			<div class="navbar-header">
+				<a th:href="@{/}" class="navbar-brand">aMediaManager</a>
+				<button class="navbar-toggle" type="button" data-toggle="collapse"
+					data-target="#navbar-main">
+					<span class="icon-bar"></span> <span class="icon-bar"></span> <span
+						class="icon-bar"></span>
+				</button>
+			</div>
+			<div class="navbar-collapse collapse" id="navbar-main">
+				<div th:include="navigation"></div>
+			</div>
+		</div>
+	</div> -->
+	<div th:include="navigation"></div>
+	<div class="container">
+		<!--  Error message include -->
+		<div th:include="error"></div>
+
+		<!-- Main template body to render -->
+		<div th:if="${not #strings.isEmpty(templateName)}">
+			<div th:include="${templateName}"></div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		$(".switch").bootstrapSwitch();
+		$(".switch").on('switchChange', function (e, data) {
+		  alert('switch');
+		});
+	</script>
+</body>
+
+</html>

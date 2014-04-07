@@ -1,0 +1,50 @@
+
+
+
+
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse"
+				data-target=".navbar-ex1-collapse">
+				<span class="sr-only">Toggle navigation</span> <span
+					class="icon-bar"></span> <span class="icon-bar"></span> <span
+					class="icon-bar"></span>
+			</button>
+			<a href="#" th:href="@{/}" class="navbar-brand">aMediaManager</a>
+		</div>
+
+		<div sec:authorize="isAnonymous()"
+			class="collapse navbar-collapse navbar-ex1-collapse">
+			<ul class="nav navbar-nav">
+				<li class="active"><a th:href="@{/}">Home</a></li>
+			</ul>
+
+			<form class="navbar-form pull-right" id="loginform" method="post"
+				th:action="@{/j_spring_security_check}">
+				<input name="j_username" type="text" class="span2"
+					placeholder="Email"></input> <input name="j_password"
+					type="password" class="span2" placeholder="Password"></input> <input
+					type="submit" value="Login" class="btn"></input>
+			</form>
+		</div>
+
+		<div sec:authorize="isAuthenticated()"
+			class="collapse navbar-collapse navbar-ex1-collapse">
+			<ul class="nav navbar-nav">
+				<li><a th:href="@{/videos}">Videos</a></li>
+				<li><a th:href="@{/user}">Account Settings</a></li>
+				<li><a th:href="@{/config}">App Config</a></li>
+			</ul>
+			<ul class="nav navbar-nav navbar-right">
+				<li><a th:href="@{/j_spring_security_logout}">Sign Out</a></li>
+				<li class="dropdown"><a href="#" class="dropdown-toggle"
+					data-toggle="dropdown"><span th:text="${user.email}">Logged
+							in user</span> <b class="caret"></b></a>
+					<ul class="dropdown-menu" style="width: 350px">
+						<div th:include="account" style="margin-top: 10px"></div>
+					</ul></li>
+			</ul>
+		</div>
+	</div>
+</div>

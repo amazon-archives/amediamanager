@@ -1,0 +1,6 @@
+[
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": "YOUR_EC2_KEY_PAIR"
+  }
+]

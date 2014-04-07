@@ -1,0 +1,14 @@
+<!--  Generic errors -->
+<div class="alert alert-danger" th:if="${error != null}">
+	<h3 th:if="${exMessage != null}" th:text="${exMessage}">Exception Message</h3>
+	<p th:text="${error}">Error Title</p>
+</div>
+
+<!--  Validation errors -->
+<div class="alert alert-danger" th:if="${errorList != null}">
+	<li th:each="err : ${errorList}" th:text="${err}">Input is incorrect</li>
+</div>
+<div class="well" th:if="${not #strings.isEmpty(stackTrace)}">
+	<h3>Stack Trace</h3>
+	<p th:text="${stackTrace}">Stack trace</p>
+</div>

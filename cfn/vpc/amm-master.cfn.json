@@ -1,0 +1,177 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Provisions two substacks: a VPC with bastion and NAT instances, and the amm-resources stack, which launches the aMediaManager Beanstalk app and its dependencies into the VPC.",
+
+  "Parameters": {
+    "VPCTemplateKey": {
+      "Description": "The key of the template for the VPC scaffold substack",
+      "Type": "String",
+      "Default": "public/vpc/vpc-scaffold.cfn.json"
+    },
+    "ResourcesTemplateKey": {
+      "Description": "The key of the template for the EB resources and application substack",
+      "Type": "String",
+      "Default": "public/vpc/amm-resources.cfn.json"
+    },
+    "AppTemplateKey": {
+      "Description": "The key of the template for that contains the EB app and env embedded in ResourcesTemplateKey",
+      "Type": "String",
+      "Default": "public/vpc/amm-elasticbeanstalk.cfn.json"
+    },
+    "KeyName": {
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the Elastic Beanstalk and Bastion hosts",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "255",
+      "AllowedPattern": "[\\x20-\\x7E]*",
+      "ConstraintDescription": "can contain only ASCII characters."
+    },
+    "SSHFrom": {
+      "Description": "Lockdown SSH access to the bastion host (default can be accessed from anywhere)",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "0.0.0.0/0",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid CIDR range of the form x.x.x.x/x."
+    },
+    "BastionInstanceType": {
+      "Description": "Bastion Host EC2 instance type",
+      "Type": "String",
+      "Default": "t1.micro",
+      "AllowedValues": ["t1.micro", "m1.small", "m1.medium", "m1.large", "m1.xlarge", "m2.xlarge", "m2.2xlarge", "m2.4xlarge", "m3.xlarge", "m3.2xlarge", "c1.medium", "c1.xlarge", "cc1.4xlarge", "cc2.8xlarge", "cg1.4xlarge"],
+      "ConstraintDescription": "must be a valid EC2 instance type."
+    },
+    "NATInstanceType": {
+      "Description": "NAT Device EC2 instance type",
+      "Type": "String",
+      "Default": "m1.small",
+      "AllowedValues": ["t1.micro", "m1.small", "m1.medium", "m1.large", "m1.xlarge", "m2.xlarge", "m2.2xlarge", "m2.4xlarge", "m3.xlarge", "m3.2xlarge", "c1.medium", "c1.xlarge", "cc1.4xlarge", "cc2.8xlarge", "cg1.4xlarge"],
+      "ConstraintDescription": "must be a valid EC2 instance type."
+    },
+    "VPCAvailabilityZone1": {
+      "Description": "One of two Availability Zones that will be used to create subnets.",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "255"
+    },
+    "VPCAvailabilityZone2": {
+      "Description": "Two of two Availability Zones that will be used to create subnets. Must be different than VPCAvailabilityZone2.",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "255"
+    },
+    "DatabaseUser": {
+      "Default": "admin",
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "Database admin account name",
+      "MinLength": "1",
+      "MaxLength": "16",
+      "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription": "must begin with a letter and contain only alphanumeric characters."
+    },
+    "DatabasePassword": {
+      "Default": "0bee082a464",
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "Database admin account password",
+      "MinLength": "1",
+      "MaxLength": "41",
+      "AllowedPattern": "[a-zA-Z0-9]*",
+      "ConstraintDescription": "must contain only alphanumeric characters."
+    },
+    "AssetsBucketPrefix": {
+      "Description": "The prefix of the S3 bucket where the application WAR is located. A region-specific suffix will be appended, e.g. AssetsBucketPrefix-us-east-1.",
+      "Type": "String",
+      "Default" : "amm-"
+    },
+    "WarKey": {
+      "Description": "The key of the application WAR file in the WarBucket",
+      "Type": "String",
+      "Default": "public/amediamanager.war"
+    },
+    "InstanceType": {
+      "Description": "The type of instance to use for EB app servers",
+      "Type": "String",
+      "Default": "t1.micro",
+      "AllowedValues": ["t1.micro", "m1.small", "m1.medium", "m1.large"]
+    },
+    "ApplicationName": {
+      "Description": "The name of the Elastic Beanstalk Application",
+      "Type": "String",
+      "Default": "aMediaManager-VPC"
+    }
+  },
+
+  "Resources": {
+    "VPCScaffold" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [ "http://", { "Ref" : "AssetsBucketPrefix" }, { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/", { "Ref" : "VPCTemplateKey" }]]},
+        "Parameters" : {
+          "KeyName": { "Ref" : "KeyName" },
+          "SSHFrom": { "Ref" : "SSHFrom" },
+          "BastionInstanceType": { "Ref" : "BastionInstanceType" },
+          "NATInstanceType" : { "Ref" : "NATInstanceType"},
+          "VPCAvailabilityZone1": { "Ref" : "VPCAvailabilityZone1" },
+          "VPCAvailabilityZone2": { "Ref" : "VPCAvailabilityZone2" }
+        }
+      }
+    },
+    "AppResources" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [ "http://", { "Ref" : "AssetsBucketPrefix" }, { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/", { "Ref" : "ResourcesTemplateKey" }]]},
+        "Parameters" : {
+          "DatabaseUser": { "Ref" : "DatabaseUser" },
+          "DatabasePassword": { "Ref" : "DatabasePassword" },
+          "InstanceSecurityGroup" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.InstanceSecurityGroup"] },
+          "VPCId" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.VPCId"] },
+          "PrivateSubnet1" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.PrivateSubnet1"] },
+          "PrivateSubnet2" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.PrivateSubnet2"] }
+        }
+      }
+    },
+    "App1" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [ "http://", { "Ref" : "AssetsBucketPrefix" }, { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/", { "Ref" : "AppTemplateKey" }]]},
+        "Parameters" : {
+          "RdsDbId"                : { "Fn::GetAtt" : [ "AppResources", "Outputs.RdsDbId" ]},
+          "CacheEndpoint"          : { "Fn::GetAtt" : [ "AppResources", "Outputs.CacheEndpoint" ]},
+          "CachePort"              : { "Fn::GetAtt" : [ "AppResources", "Outputs.CachePort" ]},
+          "AppBucket"              : { "Fn::GetAtt" : [ "AppResources", "Outputs.AppBucket" ]},
+          "TranscodeTopic"         : { "Fn::GetAtt" : [ "AppResources", "Outputs.TranscodeTopic" ]},
+          "TranscodeQueue"         : { "Fn::GetAtt" : [ "AppResources", "Outputs.TranscodeQueue" ]},
+          "TranscodeRoleArn"       : { "Fn::GetAtt" : [ "AppResources", "Outputs.TranscodeRoleArn" ]},
+          "UsersTable"             : { "Fn::GetAtt" : [ "AppResources", "Outputs.UsersTable" ]},
+          "DatabaseUser"     : { "Ref" : "DatabaseUser"},
+          "DatabasePassword" : { "Ref" : "DatabasePassword" },
+          "AssetsBucketPrefix"  : { "Ref" : "AssetsBucketPrefix" },
+          "WarKey"           : { "Ref" : "WarKey"},
+          "KeyName"          : { "Ref" : "KeyName" },
+          "InstanceType"     : { "Ref" : "InstanceType"},
+          "ApplicationName"  : { "Ref" : "ApplicationName" },
+          "InstanceSecurityGroup" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.InstanceSecurityGroup"] },
+          "VPCId" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.VPCId"] },
+          "PrivateSubnets" : {
+            "Fn::Join": [",", [{ "Fn::GetAtt" : ["VPCScaffold", "Outputs.PrivateSubnet1"] }, { "Fn::GetAtt" : ["VPCScaffold", "Outputs.PrivateSubnet2"] }]]
+          },
+          "PublicSubnets" : {
+            "Fn::Join": [",", [{ "Fn::GetAtt" : ["VPCScaffold", "Outputs.PublicSubnet1"] }, { "Fn::GetAtt" : ["VPCScaffold", "Outputs.PublicSubnet2"] }]]
+          }
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "URL": {
+      "Description": "URL of the AWS Elastic Beanstalk Environment",
+      "Value": {
+        "Fn::GetAtt": ["App1", "Outputs.URL"]
+      }
+    }
+  }
+}

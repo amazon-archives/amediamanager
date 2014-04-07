@@ -1,0 +1,11 @@
+<div class="col-md-4">
+	<img
+		th:src="${user.profilePicKey}"
+		alt="" class="img-rounded" width="100px"></img>
+</div>
+<div class="col-md-8">
+	<blockquote>
+		<p th:text="${user.nickname}">Nickname</p>
+		<cite style="font-size:85%" title="Source Title" th:text="${user.tagline}">Motto</cite>
+	</blockquote>
+</div>

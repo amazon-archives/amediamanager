@@ -1,0 +1,63 @@
+<div class="row">
+	<div class="col-md-3"></div>
+	<div class="col-md-6">
+		<div class="well">
+			<form method="post" th:action="@{/user}" th:object="${user}" enctype="multipart/form-data">
+				<fieldset>
+					<div id="legend">
+						<legend>Account Details</legend>
+					</div>
+					<div class="form-group">
+						<!-- E-mail -->
+						<label class="control-label" for="email"> E-mail </label>
+						<div class="controls">
+							<input type="text" id="email" name="email" th:field="*{email}" placeholder=""
+								class="form-control" readonly="readonly"></input>
+						</div>
+					</div>
+					<div class="form-group">
+						<!-- Nickname -->
+						<label class="control-label" for="nickname"> Nickname </label>
+						<div class="controls">
+							<input type="text" id="nickname" name="nickname" th:field="*{nickname}" placeholder=""
+								class="form-control"></input>
+						</div>
+					</div>
+					<div class="form-group">
+						<!-- Motto -->
+						<label class="control-label" for="motto"> Motto </label>
+						<div class="controls">
+							<input type="text" id="tagline" name="tagline" th:field="*{tagline}" placeholder=""
+								class="form-control"></input>
+						</div>
+					</div>
+					<div class="form-group">
+						<!-- Password-->
+						<label class="control-label" for="password"> Password </label>
+						<div class="controls">
+							<input type="password" th:field="*{password}"
+								placeholder="" class="form-control"></input>
+							<p></p>
+						</div>
+					</div>
+					<div class="form-group">
+						<!-- Password-->
+						<label class="control-label" for="password"> Profile Pic </label>
+						<div class="controls">
+							<input type="file" th:field="*{profilePicData}"
+								placeholder="" class="form-control"></input>
+							<p></p>
+						</div>
+					</div>
+					<div class="form-group">
+						<!-- Button -->
+						<div class="controls">
+							<button class="btn btn-primary btn-lg">Update</button>
+						</div>
+					</div>
+				</fieldset>
+			</form>
+		</div>
+	</div>
+	<div class="col-md-3"></div>
+</div>

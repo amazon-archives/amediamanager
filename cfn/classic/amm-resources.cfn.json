@@ -1,0 +1,321 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Provision resource dependencies for the aMediaManager app (e.g., RDS, S3, DynamoDB, etc..).",
+
+  "Parameters": {
+    "DatabaseUser": {
+      "Default": "admin",
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "Database admin account name",
+      "MinLength": "1",
+      "MaxLength": "16",
+      "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription": "must begin with a letter and contain only alphanumeric characters."
+    },
+    "DatabasePassword": {
+      "Default": "0bee082a464",
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "Database admin account password",
+      "MinLength": "1",
+      "MaxLength": "41",
+      "AllowedPattern": "[a-zA-Z0-9]*",
+      "ConstraintDescription": "must contain only alphanumeric characters."
+    },
+    "RemoteDBAccessSource": {
+      "Description": "CIDR range from which remote database connections will be allows (for local dev)",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "1.1.1.1/1",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid CIDR range of the form x.x.x.x/x."
+    },
+    "DBInstanceType": {
+      "Description": "The Key Pair to launch instances with",
+      "Type": "String",
+      "Default": "db.t1.micro",
+      "AllowedValues": ["db.t1.micro", "db.m1.small", "db.m1.medium", "db.m1.large"]
+    },
+    "ApplicationName": {
+      "Description": "The name of the Elastic Beanstalk Application",
+      "Type": "String",
+      "Default": " amediamanager"
+    }  
+  },
+  "Conditions" : {
+          "RemoteDBAccess" : { "Fn::Not" : [{ "Fn::Equals" : [ { "Ref" : "RemoteDBAccessSource" }, "1.1.1.1/1" ]}]}
+  },
+  "Resources": {
+    "InstanceSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "RDS allows ingress from EC2 instances in this group.",
+        "SecurityGroupIngress": []
+      }
+    },
+    
+    "AppBucket": {
+      "Type": "AWS::S3::Bucket"
+    },
+    "UsersTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "KeySchema": {
+          "HashKeyElement": {
+            "AttributeName": "EMail",
+            "AttributeType": "S"
+          }
+        },
+        "ProvisionedThroughput": {
+          "WriteCapacityUnits": 5,
+          "ReadCapacityUnits": 10
+        }
+      }
+    },
+
+    "CacheCluster" : {
+          "Type": "AWS::ElastiCache::CacheCluster",
+          "Properties": {
+            "CacheNodeType"           : "cache.t1.micro",
+            "CacheSecurityGroupNames" : [ { "Ref" : "CacheSecurityGroup" } ],
+            "Engine"                  : "memcached",
+            "NumCacheNodes"           : "2"
+          }
+        },
+
+        "CacheSecurityGroup": {
+          "Type": "AWS::ElastiCache::SecurityGroup",
+          "Properties": {
+            "Description"  : "Lock cache down to Web Server access only"
+          }
+        },
+
+        "CacheSecurityGroupIngress": {
+          "Type": "AWS::ElastiCache::SecurityGroupIngress",
+          "Properties": {
+            "CacheSecurityGroupName"  : { "Ref" : "CacheSecurityGroup" },
+            "EC2SecurityGroupName"    : { "Ref" : "InstanceSecurityGroup" }
+          }        
+        },
+
+
+    "DBSecurityGroup": {
+      "Type": "AWS::RDS::DBSecurityGroup",
+      "Properties": {
+        "DBSecurityGroupIngress": [
+          {"EC2SecurityGroupName": { "Ref": "InstanceSecurityGroup" }}
+        ],
+        "GroupDescription": "Database access"
+      }
+    },
+
+    "DBSecurityGroupRemoteAccess" : {
+      "Type": "AWS::RDS::DBSecurityGroupIngress", 
+      "Condition": "RemoteDBAccess",
+      "Properties": {
+        "DBSecurityGroupName": {"Ref": "DBSecurityGroup"},
+        "CIDRIP": { "Ref": "RemoteDBAccessSource" }
+      }
+    },
+
+    "Database": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+        "Engine": "MySQL",
+        "DBName": {
+          "Ref": "ApplicationName"
+        },
+        "MasterUsername": {
+          "Ref": "DatabaseUser"
+        },
+        "DBInstanceClass": { "Ref": "DBInstanceType" },
+        "DBSecurityGroups": [{
+          "Ref": "DBSecurityGroup"
+        }],
+        "AllocatedStorage": "5",
+        "MasterUserPassword": {
+          "Ref": "DatabasePassword"
+        }
+      }
+    },
+
+    "AlarmTopic": {
+      "Type": "AWS::SNS::Topic"
+    },
+
+    "TranscodeQueue": {
+      "Type": "AWS::SQS::Queue"
+    },
+
+    "TranscodeTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "Subscription": [{
+          "Endpoint": {
+            "Fn::GetAtt": ["TranscodeQueue", "Arn"]
+          },
+          "Protocol": "sqs"
+        }]
+      }
+    },
+
+    "TranscodeTopic2QueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "Queues": [{
+          "Ref": "TranscodeQueue"
+        }],
+        "PolicyDocument": {
+          "Version": "2008-10-17",
+          "Id": "PublicationPolicy",
+          "Statement": [{
+            "Sid": "Allow-SNS-SendMessage",
+            "Effect": "Allow",
+            "Principal": {
+              "AWS": "*"
+            },
+            "Action": ["sqs:SendMessage"],
+            "Resource": {
+              "Fn::GetAtt": ["TranscodeQueue", "Arn"]
+            },
+            "Condition": {
+              "ArnEquals": {
+                "aws:SourceArn": {
+                  "Ref": "TranscodeTopic"
+                }
+              }
+            }
+          }]
+        }
+      }
+    },
+
+    "TranscodeRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2008-10-17",
+          "Statement": [{
+            "Sid": "1",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "elastictranscoder.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+          }]
+        },
+        "Path": "/",
+        "Policies": [{
+          "PolicyName": "TranscodePolicy",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Sid": "1",
+              "Effect": "Allow",
+              "Action": [
+                "s3:Get*",
+                "s3:ListBucket",
+                "s3:Put*",
+                "s3:*MultipartUpload*"
+              ],
+              "Resource": [{
+                "Fn::Join": ["", ["arn:aws:s3:::", {
+                  "Ref": "AppBucket"
+                }, "/*"]]
+              }, {
+                "Fn::Join": ["", ["arn:aws:s3:::", {
+                  "Ref": "AppBucket"
+                }]]
+              }]
+            }, {
+              "Sid": "2",
+              "Effect": "Allow",
+              "Action": "sns:Publish",
+              "Resource": {
+                "Ref": "TranscodeTopic"
+              }
+            }, {
+              "Sid": "3",
+              "Effect": "Deny",
+              "Action": [
+                "sns:*Permission*",
+                "sns:*Delete*",
+                "sns:*Remove*",
+                "s3:*Policy*",
+                "s3:*Delete*"
+              ],
+              "Resource": "*"
+            }]
+          }
+        }]
+      }
+    },
+
+    "CPUAlarmHigh": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "EvaluationPeriods": "10",
+        "Statistic": "Average",
+        "Threshold": "50",
+        "AlarmDescription": "Alarm if CPU too high or metric disappears indicating the RDS database instance is having issues",
+        "Period": "60",
+        "Namespace": "AWS/RDS",
+        "MetricName": "CPUUtilization",
+        "Dimensions": [{
+          "Name": "DBInstanceIdentifier",
+          "Value": {
+            "Ref": "Database"
+          }
+        }],
+        "ComparisonOperator": "GreaterThanThreshold",
+        "AlarmActions": [{
+          "Ref": "AlarmTopic"
+        }],
+        "InsufficientDataActions": [{
+          "Ref": "AlarmTopic"
+        }]
+      }
+    }
+  },
+  "Outputs": {
+    "InstanceSecurityGroup": {
+      "Value": {"Ref": "InstanceSecurityGroup"}
+    },
+    "RdsDbId": {
+       "Value" : { "Ref" : "Database" }
+    },
+    "CacheEndpoint": { 
+      "Value": { "Fn::GetAtt" : [ "CacheCluster", "ConfigurationEndpoint.Address" ]}
+    },
+    "CachePort": { 
+      "Value" : {"Fn::GetAtt" : [ "CacheCluster", "ConfigurationEndpoint.Port" ]}
+    },
+    "AppBucket": {
+      "Value": { "Ref" : "AppBucket"}
+    },
+    "TranscodeTopic": {
+      "Value": { "Ref" : "TranscodeTopic" }
+    },
+    "TranscodeQueue": {
+      "Value": { "Ref" : "TranscodeQueue" }
+    },
+    "TranscodeRoleArn": {
+      "Value": { "Fn::GetAtt": ["TranscodeRole", "Arn"]}
+    },
+    "UsersTable": {
+      "Value": { "Ref" : "UsersTable" }
+    },
+    "DatabaseUser":{
+      "Value": { "Ref" : "DatabaseUser"}
+    },
+    "DatabasePassword": {
+      "Value": { "Ref" : "DatabasePassword" }
+    },
+    "InstanceSecurityGroup": {
+      "Value": { "Ref" : "InstanceSecurityGroup" }
+    }
+  }
+}

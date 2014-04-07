@@ -1,0 +1,123 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Parent template to provision resource dependencies and launch the aMediaManager Java Web App on AWS Elastic Beanstalk.",
+  "Parameters": {
+    "DatabaseUser": {
+      "Default": "admin",
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "Database admin account name",
+      "MinLength": "1",
+      "MaxLength": "16",
+      "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription": "must begin with a letter and contain only alphanumeric characters."
+    },
+    "DatabasePassword": {
+      "Default": "0bee082a464",
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "Database admin account password",
+      "MinLength": "1",
+      "MaxLength": "41",
+      "AllowedPattern": "[a-zA-Z0-9]*",
+      "ConstraintDescription": "must contain only alphanumeric characters."
+    },
+    "AssetsBucketPrefix": {
+      "Description": "The prefix of the S3 bucket where the application WAR is located. A region-specific suffix will be appended, e.g. AssetsBucketPrefix-us-east-1.",
+      "Type": "String",
+      "Default": "amm-"
+    },
+    "WarKey": {
+      "Description": "The key of the application WAR file in the WarBucket",
+      "Type": "String",
+      "Default": "public/amediamanager.war"
+    },
+    "RemoteDBAccessSource": {
+      "Description": "CIDR range from which remote database connections will be allows (for local dev)",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "1.1.1.1/1",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid CIDR range of the form x.x.x.x/x."
+    },
+    "AppResourcesTemplateKey": {
+      "Description": "The key of the template for the resources required to run the app",
+      "Type": "String",
+      "Default": "public/classic/amm-resources.cfn.json"
+    },
+    "AppTemplateKey": {
+      "Description": "The key of the template for the EB app/env substack",
+      "Type": "String",
+      "Default": "public/classic/amm-elasticbeanstalk.cfn.json"
+    },
+    "KeyName": {
+      "Description": "The Key Pair to launch instances with",
+      "Type": "String"
+    },
+    "InstanceType": {
+      "Description": "The Key Pair to launch instances with",
+      "Type": "String",
+      "Default": "t1.micro",
+      "AllowedValues": ["t1.micro", "m1.small", "m1.medium", "m1.large"]
+    },
+    "DBInstanceType": {
+      "Description": "The Key Pair to launch instances with",
+      "Type": "String",
+      "Default": "db.t1.micro",
+      "AllowedValues": ["db.t1.micro", "db.m1.small", "db.m1.medium", "db.m1.large"]
+    },
+    "ApplicationName": {
+      "Description": "The name of the Elastic Beanstalk Application",
+      "Type": "String",
+      "Default": " amediamanager"
+    }
+  },
+  "Resources": {
+    "AppResources" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [ "http://", { "Ref" : "AssetsBucketPrefix" }, { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/", { "Ref" : "AppResourcesTemplateKey" }]]},
+        "Parameters" : {
+          "DatabaseUser"           : { "Ref" : "DatabaseUser"},
+          "DatabasePassword"       : { "Ref" : "DatabasePassword" },
+          "RemoteDBAccessSource"   : { "Ref" : "RemoteDBAccessSource" },
+          "DBInstanceType"         : { "Ref" : "DBInstanceType"},
+          "ApplicationName"        : { "Ref" : "ApplicationName"}
+        }
+      }
+    },
+    "App1" : {
+      "Type" : "AWS::CloudFormation::Stack",
+      "Properties" : {
+        "TemplateURL" : { "Fn::Join" : ["", [ "http://", { "Ref" : "AssetsBucketPrefix" }, { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/", { "Ref" : "AppTemplateKey" }]]},
+        "Parameters" : {
+          "RdsDbId"                : { "Fn::GetAtt" : [ "AppResources", "Outputs.RdsDbId" ]},
+          "CacheEndpoint"          : { "Fn::GetAtt" : [ "AppResources", "Outputs.CacheEndpoint" ]},
+          "CachePort"              : { "Fn::GetAtt" : [ "AppResources", "Outputs.CachePort" ]},
+          "AppBucket"              : { "Fn::GetAtt" : [ "AppResources", "Outputs.AppBucket" ]},
+          "TranscodeTopic"         : { "Fn::GetAtt" : [ "AppResources", "Outputs.TranscodeTopic" ]},
+          "TranscodeQueue"         : { "Fn::GetAtt" : [ "AppResources", "Outputs.TranscodeQueue" ]},
+          "TranscodeRoleArn"       : { "Fn::GetAtt" : [ "AppResources", "Outputs.TranscodeRoleArn" ]},
+          "UsersTable"             : { "Fn::GetAtt" : [ "AppResources", "Outputs.UsersTable" ]},
+          "InstanceSecurityGroup"  : { "Fn::GetAtt" : [ "AppResources", "Outputs.InstanceSecurityGroup" ]},
+          "DatabaseUser"           : { "Ref" : "DatabaseUser"},
+          "DatabasePassword"       : { "Ref" : "DatabasePassword" },
+          "AssetsBucketPrefix"     : { "Ref" : "AssetsBucketPrefix" },
+          "WarKey"                 : { "Ref" : "WarKey"},
+          "KeyName"                : { "Ref" : "KeyName" },
+          "InstanceType"           : { "Ref" : "InstanceType"},
+          "ApplicationName"        : { "Ref" : "ApplicationName" }
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "URL": {
+      "Description": "URL of the AWS Elastic Beanstalk Environment",
+      "Value": {
+        "Fn::GetAtt": ["App1", "Outputs.URL"]
+      }
+    }
+  }
+}
