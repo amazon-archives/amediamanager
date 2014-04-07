@@ -82,6 +82,11 @@
       "AllowedPattern": "[a-zA-Z0-9]*",
       "ConstraintDescription": "must contain only alphanumeric characters."
     },
+    "DatabaseName": {
+      "Description": "The name of the database",
+      "Type": "String",
+      "Default": " amediamanager"
+    },
     "AssetsBucketPrefix": {
       "Description": "The prefix of the S3 bucket where the application WAR is located. A region-specific suffix will be appended, e.g. AssetsBucketPrefix-us-east-1.",
       "Type": "String",
@@ -127,6 +132,7 @@
         "Parameters" : {
           "DatabaseUser": { "Ref" : "DatabaseUser" },
           "DatabasePassword": { "Ref" : "DatabasePassword" },
+          "DatabaseName": { "Ref" : "DatabaseName" },          
           "InstanceSecurityGroup" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.InstanceSecurityGroup"] },
           "VPCId" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.VPCId"] },
           "PrivateSubnet1" : { "Fn::GetAtt" : ["VPCScaffold", "Outputs.PrivateSubnet1"] },
@@ -147,6 +153,7 @@
           "TranscodeQueue"         : { "Fn::GetAtt" : [ "AppResources", "Outputs.TranscodeQueue" ]},
           "TranscodeRoleArn"       : { "Fn::GetAtt" : [ "AppResources", "Outputs.TranscodeRoleArn" ]},
           "UsersTable"             : { "Fn::GetAtt" : [ "AppResources", "Outputs.UsersTable" ]},
+          "DatabaseName"     : { "Ref" : "DatabaseName"},
           "DatabaseUser"     : { "Ref" : "DatabaseUser"},
           "DatabasePassword" : { "Ref" : "DatabasePassword" },
           "AssetsBucketPrefix"  : { "Ref" : "AssetsBucketPrefix" },

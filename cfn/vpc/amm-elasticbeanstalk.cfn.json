@@ -51,6 +51,9 @@
     "ApplicationName": {
       "Type": "String"
     },
+    "DatabaseName": {
+      "Type": "String"
+    },
     "DeveloperName": {
       "Type": "String",
       "Default": "Default"
@@ -188,7 +191,7 @@
           "Namespace": "aws:elasticbeanstalk:application:environment",
           "OptionName": "AMM_RDS_DATABASE",
           "Value": {
-            "Ref": "ApplicationName"
+            "Ref": "DatabaseName"
           }
         }, {
           "Namespace": "aws:elasticbeanstalk:application:environment",
