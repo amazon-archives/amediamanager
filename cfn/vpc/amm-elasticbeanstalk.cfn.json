@@ -94,10 +94,9 @@
           "OptionSettings": [{
             "Namespace": "aws:elasticbeanstalk:application:environment",
             "OptionName": "S3_CONFIG_BUCKET",
-            "Value": {
-              "Ref": "AppBucket"
-            }
-          }, {
+            "Value": { "Ref": "AppBucket" }
+          }, 
+          {
             "Namespace": "aws:elasticbeanstalk:application:environment",
             "OptionName": "S3_CONFIG_KEY",
             "Value": {
@@ -105,54 +104,46 @@
                 "Ref": "AWS::StackName"
               }, ".properties"]]
             }
-          }, {
+          },
+          {
             "Namespace": "aws:elasticbeanstalk:application:environment",
             "OptionName": "AMM_AWS_REGION",
-            "Value": {
-              "Ref": "AWS::Region"
-            }
+            "Value": { "Ref": "AWS::Region" }
           }, {
             "Namespace": "aws:autoscaling:launchconfiguration",
             "OptionName": "EC2KeyName",
-            "Value": {
-               "Ref" : "KeyName"
-            }
-          },{
+            "Value": { "Ref" : "KeyName" }
+          },
+          {
             "Namespace": "aws:ec2:vpc",
             "OptionName": "VPCId",
-            "Value": {
-              "Ref": "VPCId"
+            "Value": { "Ref": "VPCId"
             }
-          }, {
+          },
+          {
             "Namespace": "aws:ec2:vpc",
             "OptionName": "Subnets",
-            "Value": {
-              "Ref" : "PrivateSubnets"
-            }
-          }, {
+            "Value": { "Ref" : "PrivateSubnets" }
+          },
+          {
             "Namespace": "aws:ec2:vpc",
             "OptionName": "ELBSubnets",
-            "Value": {
-              "Ref" : "PublicSubnets"
-            }
-          }, {
-            "Namespace": "aws:autoscaling:launchconfiguration",
-            "OptionName": "IamInstanceProfile",
-            "Value": {
-              "Ref": "EbAppInstanceProfile"
-            }
-          }, {
-            "Namespace": "aws:autoscaling:launchconfiguration",
-            "OptionName": "InstanceType",
-            "Value": {
-              "Ref": "InstanceType"
-            }
-          }, {
+            "Value": { "Ref" : "PublicSubnets" }
+          },
+          {
             "Namespace": "aws:autoscaling:launchconfiguration",
             "OptionName": "SecurityGroups",
-            "Value": {
-              "Ref": "InstanceSecurityGroup"
-            }
+            "Value": { "Ref": "InstanceSecurityGroup" }
+          },
+          {
+            "Namespace": "aws:autoscaling:launchconfiguration",
+            "OptionName": "IamInstanceProfile",
+            "Value": { "Ref": "EbAppInstanceProfile" }
+          },
+          {
+            "Namespace": "aws:autoscaling:launchconfiguration",
+            "OptionName": "InstanceType",
+            "Value": { "Ref": "InstanceType" }
           }]
         }],
         "ApplicationVersions": [{
