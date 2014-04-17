@@ -7,7 +7,7 @@
     "VPCTemplateKey": {
       "Description": "The key of the template for the VPC scaffold substack",
       "Type": "String",
-      "Default": "public/vpc/vpc-scaffold.cfn.json"
+      "Default": "public/vpc/amm-vpc.cfn.json"
     },
     "ResourcesTemplateKey": {
       "Description": "The key of the template for the EB resources and application substack",
