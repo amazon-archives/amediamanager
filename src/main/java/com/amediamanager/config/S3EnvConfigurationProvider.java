@@ -27,8 +27,8 @@ public class S3EnvConfigurationProvider extends com.amediamanager.config.challen
 	public S3EnvConfigurationProvider() {
 		try {
 			LOG.debug("Attempting to create S3ConfigurationProvider with bucket and key from env");
-			String bucket = System.getProperty("S3_CONFIG_BUCKET");
-			String key = System.getProperty("S3_CONFIG_KEY");
+			String bucket = (System.getProperty("S3_CONFIG_BUCKET") != null) ? System.getProperty("S3_CONFIG_BUCKET") : System.getenv("S3_CONFIG_BUCKET");
+			String key = (System.getProperty("S3_CONFIG_KEY") != null) ? System.getProperty("S3_CONFIG_KEY") : System.getenv("S3_CONFIG_KEY");
 			
 			if(bucket == null || key == null) {
 				StringBuilder sb = new StringBuilder();

@@ -68,9 +68,9 @@ public class ServerConfig {
     @Scope(WebApplicationContext.SCOPE_APPLICATION)
     public AWSCredentialsProvider credentials() {
         return new AWSCredentialsProviderChain(
+            new InstanceProfileCredentialsProvider(),
         		new EnvironmentVariableCredentialsProvider(),
-                new SystemPropertiesCredentialsProvider(),
-                new InstanceProfileCredentialsProvider()
+            new SystemPropertiesCredentialsProvider()
                 );
     }
 

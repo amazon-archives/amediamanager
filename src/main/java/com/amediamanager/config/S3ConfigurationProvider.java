@@ -21,6 +21,11 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.AWSCredentialsProviderChain;
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
+import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
@@ -39,7 +44,12 @@ public abstract class S3ConfigurationProvider extends ConfigurationProvider {
     	
     	// Load properties if there is a bucket and key
         if (bucket != null && key != null) {
-            AmazonS3 s3Client = new AmazonS3Client();
+          AWSCredentialsProvider creds = new AWSCredentialsProviderChain(
+                      new InstanceProfileCredentialsProvider(),
+                  		new EnvironmentVariableCredentialsProvider(),
+                      new SystemPropertiesCredentialsProvider()
+                          );
+            AmazonS3 s3Client = new AmazonS3Client(creds);
             try {
                 S3Object object = s3Client.getObject(this.bucket, this.key);
                 if (object != null) {
