@@ -97,6 +97,11 @@
       "Type": "String",
       "Default": "public/amediamanager.war"
     },
+    "DockerKey": {
+      "Description": "The key of the application WAR file in the WarBucket",
+      "Type": "String",
+      "Default": "public/Dockerrun.aws.json"
+    },
     "InstanceType": {
       "Description": "The type of instance to use for EB app servers",
       "Type": "String",
@@ -158,6 +163,7 @@
           "DatabasePassword" : { "Ref" : "DatabasePassword" },
           "AssetsBucketPrefix"  : { "Ref" : "AssetsBucketPrefix" },
           "WarKey"           : { "Ref" : "WarKey"},
+          "DockerKey"           : { "Ref" : "DockerKey"},
           "KeyName"          : { "Ref" : "KeyName" },
           "InstanceType"     : { "Ref" : "InstanceType"},
           "ApplicationName"  : { "Ref" : "ApplicationName" },
