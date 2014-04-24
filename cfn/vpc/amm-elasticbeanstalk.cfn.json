@@ -244,7 +244,7 @@
         }]
       }
     },
-    "Environment1": {
+    "TomcatEnv": {
       "Type": "AWS::ElasticBeanstalk::Environment",
       "Properties": {
         "ApplicationName": { "Ref": "Application"},
@@ -345,7 +345,7 @@
         }]
       }
     },
-    "Environment2": {
+    "DockerEnv": {
       "Type": "AWS::ElasticBeanstalk::Environment",
       "Properties": {
         "ApplicationName": { "Ref": "Application"},
@@ -495,7 +495,7 @@
       "Description": "URL of the AWS Elastic Beanstalk Environment",
       "Value": {
         "Fn::Join": ["", ["http://", {
-          "Fn::GetAtt": ["Environment1", "EndpointURL"]
+          "Fn::GetAtt": ["TomcatEnv", "EndpointURL"]
         }]]
       }
     }
