@@ -58,19 +58,22 @@ public class ServerConfig {
 	@Bean
 	@Scope(WebApplicationContext.SCOPE_APPLICATION)
 	public MemcachedClient memcachedClient(final ConfigurationSettings settings) throws IOException {
-		String configEndpoint = settings.getProperty(ConfigurationSettings.ConfigProps.CACHE_ENDPOINT);
-        Integer clusterPort = Integer.parseInt(settings.getProperty(ConfigurationSettings.ConfigProps.CACHE_PORT));
-        
-        return new MemcachedClient(new InetSocketAddress(configEndpoint, clusterPort));   
+		MemcachedClient client = null;
+		if(settings.getProperty(ConfigurationSettings.ConfigProps.CACHE_ENABLED).equalsIgnoreCase("true")) {
+			String configEndpoint = settings.getProperty(ConfigurationSettings.ConfigProps.CACHE_ENDPOINT);
+	        Integer clusterPort = Integer.parseInt(settings.getProperty(ConfigurationSettings.ConfigProps.CACHE_PORT));
+	        client = new MemcachedClient(new InetSocketAddress(configEndpoint, clusterPort));
+		}
+        return client;
 	}
 	
     @Bean
     @Scope(WebApplicationContext.SCOPE_APPLICATION)
     public AWSCredentialsProvider credentials() {
         return new AWSCredentialsProviderChain(
-            new InstanceProfileCredentialsProvider(),
-        		new EnvironmentVariableCredentialsProvider(),
-            new SystemPropertiesCredentialsProvider()
+		            new InstanceProfileCredentialsProvider(),
+		            new EnvironmentVariableCredentialsProvider(),
+		            new SystemPropertiesCredentialsProvider()
                 );
     }
 
