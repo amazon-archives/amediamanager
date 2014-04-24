@@ -27,7 +27,6 @@ local.properties
 .cproject
 .buildpath
 target/
-Dockerfile
 Dockerrun.local.json
 Vagrantfile
 .vagrant/
