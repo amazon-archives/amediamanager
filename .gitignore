@@ -31,3 +31,4 @@ Dockerrun.local.json
 Vagrantfile
 .vagrant/
 workshop-docs/
+.elasticbeanstalk/
