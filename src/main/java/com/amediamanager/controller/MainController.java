@@ -30,7 +30,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.amediamanager.dao.TagDao.TagCount;
+import com.amediamanager.dao.TagCount;
 import com.amediamanager.domain.NewUser;
 import com.amediamanager.domain.Video;
 import com.amediamanager.service.TagsService;

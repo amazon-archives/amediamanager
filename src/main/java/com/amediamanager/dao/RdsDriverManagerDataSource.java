@@ -95,7 +95,7 @@ public class RdsDriverManagerDataSource extends DriverManagerDataSource {
                 builder.append("/"
                         + config.getProperty(ConfigurationSettings.ConfigProps.RDS_DATABASE));
                 String connectionString = builder.toString();
-
+                LOG.info("MySQL Connection String: " + connectionString);
                 super.setUrl(connectionString);
             } else {
             	LOG.warn("No RDS master database detected!");
