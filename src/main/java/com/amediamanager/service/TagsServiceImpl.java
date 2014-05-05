@@ -16,27 +16,74 @@ package com.amediamanager.service;
 
 import java.util.List;
 
+import net.spy.memcached.MemcachedClient;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.amediamanager.config.ConfigurationSettings;
 import com.amediamanager.dao.TagDao;
-import com.amediamanager.dao.TagDao.TagCount;
+import com.amediamanager.dao.TagCount;
 import com.amediamanager.domain.Video;
 
 @Service
 public class TagsServiceImpl implements TagsService {
 
-	@Autowired private TagDao tagDao; 
+	protected static final Logger LOG = LoggerFactory
+			.getLogger(TagsServiceImpl.class);
+	
+	@Autowired
+	private TagDao tagDao; 
 
+	@Autowired
+	protected MemcachedClient memcachedClient;
+	
+	@Autowired
+	protected ConfigurationSettings config;
+	
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<TagCount> getTagsForUser(String user) {
-		return tagDao.getTagsForUser(user);
+		Object cached = null;
+		List<TagCount> tags = null;
+		
+		if(cachingEnabled()) {
+			cached = memcachedClient.get(getTagListKey(user));
+		}
+		
+		if(cached != null) {
+			tags = (List<TagCount>)cached;
+			LOG.debug("CACHE HIT: Tag List");
+		} else {
+			tags = tagDao.getTagsForUser(user);
+			if(cachingEnabled()) {
+				LOG.info("CACHE MISS: Tag List");
+				memcachedClient.set(getTagListKey(user), 3600, tags);
+			}
+		}
+		return tags;
 	}
 
 	@Override
 	public List<Video> getVideosForUserByTag(String user, String tagId) {
 		return tagDao.getVideosForUserByTag(user, tagId);
 	}
-
 	
+	@Override
+	public void bustCacheForUser(String user) {
+		if(cachingEnabled()) {
+			memcachedClient.delete(getTagListKey(user));
+			LOG.info("Busted tag list cache for " + getTagListKey(user));
+		}
+	}
+
+	private String getTagListKey(String ownerId) {
+		return ownerId + "-tags";
+	}
+
+	private Boolean cachingEnabled() {
+		return Boolean.parseBoolean(config.getProperty(ConfigurationSettings.ConfigProps.CACHE_ENABLED));
+	}
 }

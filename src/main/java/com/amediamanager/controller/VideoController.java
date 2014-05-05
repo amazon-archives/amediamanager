@@ -57,7 +57,7 @@ import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amediamanager.config.ConfigurationSettings;
 import com.amediamanager.config.ConfigurationSettings.ConfigProps;
-import com.amediamanager.dao.TagDao.TagCount;
+import com.amediamanager.dao.TagCount;
 import com.amediamanager.domain.ContentType;
 import com.amediamanager.domain.Privacy;
 import com.amediamanager.domain.Tag;

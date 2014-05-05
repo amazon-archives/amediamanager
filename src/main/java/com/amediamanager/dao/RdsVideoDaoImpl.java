@@ -52,6 +52,7 @@ public class RdsVideoDaoImpl implements VideoDao {
     
     @SuppressWarnings("unchecked")
     @Override
+    @Transactional(readOnly = true)
     public List<Video> findByUserId(String userId) {
         List<Video> videos = getCurrentSession().createQuery(
                 "from Video as video where video.owner = :owner")
@@ -63,6 +64,7 @@ public class RdsVideoDaoImpl implements VideoDao {
 
     @SuppressWarnings("unchecked")
     @Override
+    @Transactional(readOnly = true)
     public Video findByTranscodeJobId(String jobId) {
        List<Video> videos = getCurrentSession().createQuery(
                 "from Video as video where video.transcodeJobId = :jobId")
@@ -72,6 +74,7 @@ public class RdsVideoDaoImpl implements VideoDao {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Video findById(String id) {
         return (Video) getCurrentSession().get(Video.class, id);
     }

@@ -73,12 +73,16 @@ public class VideoServiceImpl implements VideoService {
 	protected AmazonElasticTranscoder transcoderClient;
 	
 	@Autowired
+	protected TagsService tagsService;
+	
+	@Autowired
 	protected MemcachedClient memcachedClient;
 
 	@Override
 	public void save(Video video) throws DataSourceTableDoesNotExistException {
 		if(cachingEnabled()) {
 			memcachedClient.delete(getVideoListKey(video.getOwner()));
+			tagsService.bustCacheForUser(video.getOwner());
 			LOG.info("Busted video cache for " + getVideoListKey(video.getOwner()));
 		}
 		videoDao.save(video);
@@ -121,6 +125,7 @@ public class VideoServiceImpl implements VideoService {
 	public void update(Video video) throws DataSourceTableDoesNotExistException {
 		if(cachingEnabled()) {
 			memcachedClient.delete(getVideoListKey(video.getOwner()));
+			tagsService.bustCacheForUser(video.getOwner());
 			LOG.info("Busted video cache for " + getVideoListKey(video.getOwner()));
 		}
 		videoDao.update(video);
@@ -130,6 +135,7 @@ public class VideoServiceImpl implements VideoService {
 	public void delete(Video video) {
 		if(cachingEnabled()) {
 			memcachedClient.delete(getVideoListKey(video.getOwner()));
+			tagsService.bustCacheForUser(video.getOwner());
 			LOG.info("Busted video cache for " + getVideoListKey(video.getOwner()));
 		}
 		videoDao.delete(video);

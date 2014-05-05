@@ -44,14 +44,16 @@ public class RDSTagDaoImpl implements TagDao {
 
 	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional(readOnly = true)
 	public List<TagCount> getTagsForUser(String u) {
-		Query query = sessionFactory.getCurrentSession().createQuery("select new com.amediamanager.dao.TagDao$TagCount(tag.tagId, tag.name, count(video.id)) from Tag tag join tag.videos video where video.owner = :owner group by tag.tagId");
+		Query query = sessionFactory.getCurrentSession().createQuery("select new com.amediamanager.dao.TagCount(tag.tagId, tag.name, count(video.id)) from Tag tag join tag.videos video where video.owner = :owner group by tag.tagId");
 		query.setParameter("owner", u);
 		return query.list();
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional(readOnly = true)
 	public List<Video> getVideosForUserByTag(String user, String tagId) {
 		Query query = sessionFactory.getCurrentSession().createQuery("select video from Video video join video.tags tag where video.owner = :owner and tag.tagId = :tag");
 		query.setParameter("owner", user);
