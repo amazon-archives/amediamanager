@@ -25,7 +25,7 @@
     "AssetsBucketPrefix": {
       "Description": "The prefix of the S3 bucket where the application WAR is located. A region-specific suffix will be appended, e.g. AssetsBucketPrefix-us-east-1.",
       "Type": "String",
-      "Default": "amm-"
+      "Default": "aws-amm-"
     },
     "WarKey": {
       "Description": "The key of the application WAR file in the WarBucket",
