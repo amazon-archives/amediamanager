@@ -119,7 +119,7 @@
           "Type": "AWS::ElastiCache::CacheCluster",
           "Properties": {
             "CacheSubnetGroupName" : { "Ref" : "CacheSubnetGroup" },
-            "CacheNodeType"        : "cache.t1.micro",
+            "CacheNodeType"        : "cache.t2.micro",
             "VpcSecurityGroupIds"  : [ { "Ref" : "CacheSecurityGroup" } ],
             "Engine"               : "memcached",
             "NumCacheNodes"        : "2"
@@ -172,7 +172,7 @@
         "MasterUsername": {
           "Ref": "DatabaseUser"
         },
-        "DBInstanceClass": "db.m1.small",
+        "DBInstanceClass": "db.t2.micro",
         "AllocatedStorage": "5",
         "MasterUserPassword": {
           "Ref": "DatabasePassword"
