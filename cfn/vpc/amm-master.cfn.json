@@ -88,9 +88,9 @@
       "Default": " amediamanager"
     },
     "AssetsBucketPrefix": {
-      "Description": "The prefix of the S3 bucket where the application WAR is located. A region-specific suffix will be appended, e.g. AssetsBucketPrefix-us-east-1.",
+      "Description": "The prefix of the S3 bucket where the application configuration and artifacts are stored",
       "Type": "String",
-      "Default" : "aws-amm-"
+      "Default" : "aws-amm"
     },
     "WarKey": {
       "Description": "The key of the application WAR file in the WarBucket",
@@ -114,7 +114,7 @@
     "VPCScaffold" : {
       "Type" : "AWS::CloudFormation::Stack",
       "Properties" : {
-        "TemplateURL" : { "Fn::Join" : ["", [ "http://", { "Ref" : "AssetsBucketPrefix" }, { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/", { "Ref" : "VPCTemplateKey" }]]},
+        "TemplateURL" : { "Fn::Join" : ["", [ "https://s3.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AssetsBucketPrefix" }, "/" ,{ "Ref" : "VPCTemplateKey" }]]},
         "Parameters" : {
           "KeyName": { "Ref" : "KeyName" },
           "SSHFrom": { "Ref" : "SSHFrom" },
@@ -128,7 +128,7 @@
     "AppResources" : {
       "Type" : "AWS::CloudFormation::Stack",
       "Properties" : {
-        "TemplateURL" : { "Fn::Join" : ["", [ "http://", { "Ref" : "AssetsBucketPrefix" }, { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/", { "Ref" : "ResourcesTemplateKey" }]]},
+        "TemplateURL" : { "Fn::Join" : ["", [ "https://s3.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AssetsBucketPrefix" }, "/" ,{ "Ref" : "ResourcesTemplateKey" }]]},
         "Parameters" : {
           "DatabaseUser": { "Ref" : "DatabaseUser" },
           "DatabasePassword": { "Ref" : "DatabasePassword" },
@@ -143,7 +143,7 @@
     "App1" : {
       "Type" : "AWS::CloudFormation::Stack",
       "Properties" : {
-        "TemplateURL" : { "Fn::Join" : ["", [ "http://", { "Ref" : "AssetsBucketPrefix" }, { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/", { "Ref" : "AppTemplateKey" }]]},
+        "TemplateURL" : { "Fn::Join" : ["", [ "https://s3.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AssetsBucketPrefix" }, "/" ,{ "Ref" : "AppTemplateKey" }]]},
         "Parameters" : {
           "RdsDbId"                : { "Fn::GetAtt" : [ "AppResources", "Outputs.RdsDbId" ]},
           "CacheEndpoint"          : { "Fn::GetAtt" : [ "AppResources", "Outputs.CacheEndpoint" ]},
