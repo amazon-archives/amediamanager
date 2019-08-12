@@ -43,7 +43,7 @@
       "Description": "The name of the Elastic Beanstalk Application",
       "Type": "String",
       "Default": " amediamanager"
-    }  
+    }
   },
   "Conditions" : {
           "RemoteDBAccess" : { "Fn::Not" : [{ "Fn::Equals" : [ { "Ref" : "RemoteDBAccessSource" }, "1.1.1.1/1" ]}]}
@@ -56,7 +56,7 @@
         "SecurityGroupIngress": []
       }
     },
-    
+
     "AppBucket": {
       "Type": "AWS::S3::Bucket"
     },
@@ -98,7 +98,7 @@
           "Properties": {
             "CacheSecurityGroupName"  : { "Ref" : "CacheSecurityGroup" },
             "EC2SecurityGroupName"    : { "Ref" : "InstanceSecurityGroup" }
-          }        
+          }
         },
 
 
@@ -113,7 +113,7 @@
     },
 
     "DBSecurityGroupRemoteAccess" : {
-      "Type": "AWS::RDS::DBSecurityGroupIngress", 
+      "Type": "AWS::RDS::DBSecurityGroupIngress",
       "Condition": "RemoteDBAccess",
       "Properties": {
         "DBSecurityGroupName": {"Ref": "DBSecurityGroup"},
@@ -287,10 +287,10 @@
     "RdsDbId": {
        "Value" : { "Ref" : "Database" }
     },
-    "CacheEndpoint": { 
+    "CacheEndpoint": {
       "Value": { "Fn::GetAtt" : [ "CacheCluster", "ConfigurationEndpoint.Address" ]}
     },
-    "CachePort": { 
+    "CachePort": {
       "Value" : {"Fn::GetAtt" : [ "CacheCluster", "ConfigurationEndpoint.Port" ]}
     },
     "AppBucket": {
