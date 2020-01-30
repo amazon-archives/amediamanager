@@ -9,7 +9,7 @@
 
 	<properties>
 		<org.springframework.version>3.2.4.RELEASE</org.springframework.version>
-		<springsecurity.version>3.1.4.RELEASE</springsecurity.version>
+		<springsecurity.version>5.2.1.RELEASE</springsecurity.version>
 		<thymeleaf.version>2.0.14</thymeleaf.version>
 		<thymeleafspringsecurity3.version>1.0.0-beta2</thymeleafspringsecurity3.version>
 	</properties>
